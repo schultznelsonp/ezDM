@@ -48,13 +48,17 @@ class InitCreator(BoxLayout):
         btn.bind(on_press=callback)
         self.add_widget(btn)
 
-# This class is mostly needed to have easy access to the characters initiative values.
+# This class represents one character in the initiative list. Used for easy acces to init values and
+# to allow for a delete button.
 class Character(BoxLayout):
+
+    def defaultCallback(parent, button):
+        print 'No callback defined!'
 
     def __init__(self, name, init, **kwargs):
         super(Character, self).__init__(**kwargs)
         self.orientation = 'horizontal'
-        self.size_hint=(1.0, None)
+        self.size_hint = (1.0, None)
         self.height = CHARACTER_HEIGHT
 
         self.name = name
@@ -62,38 +66,54 @@ class Character(BoxLayout):
         self.add_widget(Label(text=name))
         self.add_widget(Label(text=init))
 
+        btn = Button(text='X')
+        callback = kwargs.get('callback', self.defaultCallback)
+        btn.bind(on_press=callback)
+        btn.size_hint = (None, 1.0)
+        btn.width = CHARACTER_HEIGHT
+        self.add_widget(btn)
+
 # The parent layout for all initiative stuff. Defines the logic for adding characters.
 class InitTab(BoxLayout):
 
-    def creationCallback(parent, button):
+    def creationCallback(initTab, button):
         # Get the input from the initCreator and make a new character from it.
-        nameInput = parent.initCreator.nameInput.text
-        initInput = parent.initCreator.initInut.text
-        newCharacter = Character(name=nameInput, init=initInput)
+        nameInput = initTab.initCreator.nameInput.text
+        initInput = initTab.initCreator.initInut.text
+        newCharacter = Character(name=nameInput, init=initInput, callback=initTab.deletionCallback)
 
         # We keep track of all the characters with a separate list, sorted in reverse by init value
-        characters = parent.characters
+        characters = initTab.characters
         characters.append(newCharacter)
         characters.sort(key=lambda x: x.init, reverse=True)
         
         # In order to draw the init list with the correct order, we actually have to create a new
-        # box layout each time we add (or remove) a character. The same effect could probably be
+        # box layout each time we add a character. The same effect could probably be
         # attained by using a relative layout, but this is easier.
 
         # We remove all the characters from list layout. If we don't do this, kivy will tell us
         # that we can't give a widget two parents, and then crash.
         for character in characters:
-            parent.initList.remove_widget(character)
+            initTab.initList.remove_widget(character)
         
         # Remove old initList and create a new one
-        parent.remove_widget(parent.initList)
-        parent.initList = BoxLayout(orientation = 'vertical')
+        initTab.remove_widget(initTab.initList)
+        initTab.initList = BoxLayout(orientation = 'vertical')
 
         # Add all the characters to the new init list, and then add the new initList to the init tab
         for character in characters:
-            parent.initList.add_widget(character)
-        parent.add_widget(parent.initList)
+            initTab.initList.add_widget(character)
+        initTab.add_widget(initTab.initList)
 
+        Window.size = (WINDOW_WIDTH, INIT_CREATOR_HEIGHT + (CHARACTER_HEIGHT * len(characters)))
+
+    # Simply remove and resize the window; BoxLayout automatically takes care of repositioning
+    def deletionCallback(initTab, button):
+        characters = initTab.characters
+        character = button.parent
+
+        initTab.initList.remove_widget(character)
+        characters.remove(character)
         Window.size = (WINDOW_WIDTH, INIT_CREATOR_HEIGHT + (CHARACTER_HEIGHT * len(characters)))
         
 
