@@ -8,6 +8,10 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.button import Button
 
+WINDOW_WIDTH = 500
+INIT_CREATOR_HEIGHT = 100
+CHARACTER_HEIGHT = 20
+
 # This item at the top of the init tab that is used to create characters. You can specify a
 # custom callback by passing a 'callback' argument into the constructor
 class InitCreator(BoxLayout):
@@ -22,7 +26,7 @@ class InitCreator(BoxLayout):
         self.orientation = 'horizontal'
         self.spacing = 10
         self.size_hint = (1.0, None)
-        self.height = 100
+        self.height = INIT_CREATOR_HEIGHT
 
         nameBox = BoxLayout(orientation='vertical')
         nameBox.add_widget(Label(text='Character Name'))
@@ -51,7 +55,7 @@ class Character(BoxLayout):
         super(Character, self).__init__(**kwargs)
         self.orientation = 'horizontal'
         self.size_hint=(1.0, None)
-        self.height = 20
+        self.height = CHARACTER_HEIGHT
 
         self.name = name
         self.init = int(init)
@@ -90,7 +94,7 @@ class InitTab(BoxLayout):
             parent.initList.add_widget(character)
         parent.add_widget(parent.initList)
 
-        Window.size = (500, 100 + (20 * len(characters)))
+        Window.size = (WINDOW_WIDTH, INIT_CREATOR_HEIGHT + (CHARACTER_HEIGHT * len(characters)))
         
 
     def __init__(self, **kwargs):
